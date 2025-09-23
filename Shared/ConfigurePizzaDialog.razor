@@ -2,32 +2,44 @@
 
 <div class="dialog-container">
     <div class="dialog">
+        <!-- Pizza Title and Description -->
         <div class="dialog-title">
             <h2>@Pizza.Special.Name</h2>
-            @Pizza.Special.Description
+            <p>@Pizza.Special.Description</p>
         </div>
+
+        <!-- Pizza Size (only if resizable) -->
         <form class="dialog-body">
-            <div>
-                <label>Size:</label>
-                <input type="range" min="@Pizza.MinimumSize" max="@Pizza.MaximumSize" step="1" 
-                       @bind="Pizza.Size" @bind:event="oninput" />
-                <span class="size-label">
-                    @(Pizza.Size)" ($@(Pizza.GetFormattedTotalPrice()))
-                </span>
-            </div>
+            @if (supportSizing)
+            {
+                <div class="mb-3">
+                    <label for="pizzaSize">Size:</label>
+                    <input id="pizzaSize" type="range" min="@Pizza.MinimumSize" max="@Pizza.MaximumSize" step="1"
+                        @bind="Pizza.Size" @bind:event="oninput" />
+                    <span class="size-label">
+                        @(Pizza.Size)" ($@(Pizza.GetFormattedTotalPrice()))
+                    </span>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">
+                    This is a family-size pizza and cannot be resized.
+                    Price: @Pizza.GetFormattedTotalPrice()
+                </p>
+            }
         </form>
 
-        <div class="dialog-buttons">
-            <button class="btn btn-secondary mr-auto" @onclick="OnCancel">Cancel</button>
-            <span class="size-label">
-                @(Pizza.Size)" (@BlazingPizza.Services.CurrencyHelper.Format(Pizza.GetTotalPrice()))
-            </span>
+        <!-- Dialog Buttons -->
+        <div class="dialog-buttons d-flex align-items-center justify-content-between mt-3">
+            <button class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
 
-            <span class="mr-center">
-                Price: <span class="price">@BlazingPizza.Services.CurrencyHelper.Format(Pizza.GetTotalPrice())</span>
-            </span>
-
-            <button class="btn btn-success ml-auto" @onclick="OnConfirm">Order ></button>
+            <div>
+                <span class="me-2">
+                    Price: <strong>@BlazingPizza.Services.CurrencyHelper.Format(Pizza.GetTotalPrice())</strong>
+                </span>
+                <button class="btn btn-success" @onclick="OnConfirm">Order &gt;</button>
+            </div>
         </div>
     </div>
 </div>
@@ -36,4 +48,15 @@
     [Parameter] public Pizza Pizza { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnConfirm { get; set; }
+
+    bool supportSizing = true;
+
+    protected override void OnInitialized()
+    {
+        if (Pizza is { Special.FixedSize: not null })
+        {
+            Pizza.Size = Pizza.Special.FixedSize.Value;
+            supportSizing = false;
+        }
+    }
 }

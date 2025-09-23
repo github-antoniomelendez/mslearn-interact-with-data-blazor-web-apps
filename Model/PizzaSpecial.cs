@@ -15,6 +15,8 @@ namespace BlazingPizza
         public string Description { get; set; }
 
         public string ImageUrl { get; set; }
+        
+        public int? FixedSize { get; set; }
 
         public string GetFormattedBasePrice() => BasePrice.ToString("0.00");
     }
